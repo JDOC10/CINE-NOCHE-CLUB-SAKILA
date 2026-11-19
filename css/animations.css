@@ -1,0 +1,12 @@
+.card {
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+.card:hover {
+  transform: scale(1.035);
+  box-shadow: 0 12px 35px #000b;
+}
+.btn:hover {
+  filter: brightness(1.2);
+}

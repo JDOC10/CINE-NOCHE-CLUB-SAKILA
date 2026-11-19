@@ -1,0 +1,735 @@
+
+/* CINE NOCHE - CATALOGO AVANZADO */
+
+.cine-catalogo-avanzado {
+  padding-top: 55px;
+  padding-bottom: 85px;
+}
+
+.cine-catalogo-encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+.cine-etiqueta {
+  display: inline-block;
+  color: #e50914;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  margin-bottom: 12px;
+}
+
+.cine-catalogo-encabezado h2 {
+  color: #fff;
+  font-size: clamp(26px, 4vw, 40px);
+  font-weight: 800;
+  margin: 0 0 12px;
+}
+
+.cine-catalogo-encabezado p {
+  color: #aaa;
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.cine-contador {
+  color: #ddd;
+  background: #202020;
+  border: 1px solid #353535;
+  border-radius: 30px;
+  padding: 10px 18px;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.cine-herramientas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 35px;
+  padding: 20px;
+  border: 1px solid #292929;
+  border-radius: 15px;
+  background: #171717;
+}
+
+.cine-buscador {
+  flex: 1 1 260px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #242424;
+  border: 1px solid #3a3a3a;
+  border-radius: 10px;
+  padding: 0 15px;
+  min-height: 48px;
+}
+
+.cine-buscador span {
+  color: #e50914;
+  font-size: 26px;
+}
+
+.cine-buscador input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 14px;
+}
+
+.cine-buscador input::placeholder {
+  color: #999;
+}
+
+.cine-buscador:focus-within {
+  border-color: #e50914;
+}
+
+.cine-ordenar {
+  min-height: 48px;
+  padding: 0 15px;
+  border: 1px solid #3a3a3a;
+  border-radius: 10px;
+  background: #242424;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.cine-filtro-trailer {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #eee;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.cine-filtro-trailer input {
+  accent-color: #e50914;
+  width: 17px;
+  height: 17px;
+}
+
+.cine-grid-avanzado {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.cine-tarjeta-avanzada {
+  min-width: 0;
+  overflow: hidden;
+  background: #191919;
+  border: 1px solid #292929;
+  border-radius: 13px;
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.cine-tarjeta-avanzada:hover {
+  transform: translateY(-8px);
+  border-color: #e50914;
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.55);
+}
+
+.cine-poster-contenedor {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  background: #111;
+}
+
+.cine-poster-contenedor img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.cine-tarjeta-avanzada:hover .cine-poster-contenedor img {
+  transform: scale(1.06);
+}
+
+.cine-poster-contenedor .cine-sin-poster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 44px;
+}
+
+.cine-poster-insignia {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 7px 11px;
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.82);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.cine-tarjeta-informacion {
+  padding: 17px;
+}
+
+.cine-tarjeta-informacion h3 {
+  color: #fff;
+  font-size: 16px;
+  line-height: 1.4;
+  min-height: 45px;
+  margin: 0 0 12px;
+}
+
+.cine-tarjeta-datos {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: #aaa;
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+
+.cine-tarjeta-precio {
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 16px;
+}
+
+.cine-tarjeta-precio small {
+  color: #999;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.cine-ver-detalles {
+  display: block;
+  width: 100%;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.cine-sin-resultados {
+  text-align: center;
+  padding: 55px 20px;
+  border: 1px dashed #444;
+  border-radius: 15px;
+  margin-bottom: 25px;
+}
+
+.cine-sin-resultados h3 {
+  color: white;
+  font-size: 22px;
+}
+
+.cine-sin-resultados p {
+  color: #aaa;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 1200px) {
+  .cine-grid-avanzado {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .cine-grid-avanzado {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .cine-catalogo-encabezado {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .cine-herramientas {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cine-buscador {
+    flex: none;
+    width: 100%;
+  }
+
+  .cine-grid-avanzado {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .cine-tarjeta-informacion {
+    padding: 12px;
+  }
+
+  .cine-tarjeta-informacion h3 {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 380px) {
+  .cine-grid-avanzado {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ========================================
+   CINE NOCHE - BOTONES PREMIUM
+======================================== */
+
+.cine-boton,
+.cine-ver-detalles,
+button.cine-boton {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #e50914, #b20710);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 13px 22px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    background 0.3s ease;
+  box-shadow: 0 5px 15px rgba(229, 9, 20, 0.15);
+}
+
+.cine-boton:hover,
+.cine-ver-detalles:hover {
+  background: linear-gradient(135deg, #ff2838, #e50914);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(229, 9, 20, 0.38);
+}
+
+.cine-boton:active,
+.cine-ver-detalles:active {
+  transform: scale(0.97);
+}
+
+.cine-boton::before,
+.cine-ver-detalles::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -110%;
+  width: 70%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.25),
+    transparent
+  );
+  transform: skewX(-25deg);
+  transition: left 0.55s ease;
+  pointer-events: none;
+}
+
+.cine-boton:hover::before,
+.cine-ver-detalles:hover::before {
+  left: 140%;
+}
+
+/* Buscador moderno */
+
+.cine-buscador {
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.cine-buscador:focus-within {
+  border-color: #e50914;
+  box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.12);
+}
+
+/* Selector de orden */
+
+.cine-ordenar {
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.cine-ordenar:hover,
+.cine-ordenar:focus {
+  border-color: #e50914;
+  background: #303030;
+}
+
+/* Accesibilidad */
+
+.cine-boton:focus-visible,
+.cine-ver-detalles:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cine-boton,
+  .cine-ver-detalles,
+  .cine-boton::before,
+  .cine-ver-detalles::before {
+    transition: none;
+  }
+}
+
+
+/* MENU SUPERIOR MODERNO - CINE NOCHE */
+
+header nav,
+.cine-header nav,
+.cine-navbar nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+header nav a,
+header nav button,
+.cine-header nav a,
+.cine-header nav button,
+.cine-navbar nav a,
+.cine-navbar nav button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 10px 20px;
+  border: 1px solid #35353b;
+  border-radius: 11px;
+  background: #1e1e24;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+header nav a:hover,
+header nav button:hover,
+.cine-header nav a:hover,
+.cine-header nav button:hover,
+.cine-navbar nav a:hover,
+.cine-navbar nav button:hover {
+  background: #e50914;
+  border-color: #e50914;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 7px 22px rgba(229, 9, 20, 0.3);
+}
+
+header nav a:focus-visible,
+header nav button:focus-visible {
+  outline: 2px solid #ff5962;
+  outline-offset: 3px;
+}
+
+header nav a[aria-current="page"],
+.cine-header nav a[aria-current="page"] {
+  background: linear-gradient(135deg, #e50914, #a9000a);
+  border-color: #e50914;
+  color: white;
+  box-shadow: 0 5px 20px rgba(229, 9, 20, 0.25);
+}
+
+@media (max-width: 650px) {
+  header nav,
+  .cine-header nav,
+  .cine-navbar nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 7px;
+  }
+
+  header nav a,
+  header nav button {
+    padding: 9px 12px;
+    min-height: 38px;
+    font-size: 12px;
+  }
+}
+
+
+/* CINE NOCHE - NAVEGACION MODERNA */
+
+.cine-header nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cine-header nav .cine-nav-link,
+.cine-header nav .auth-nav-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 10px 18px;
+  border: 1px solid #383838;
+  border-radius: 12px;
+  background: #1b1b1b;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.cine-header nav .cine-nav-link:hover,
+.cine-header nav .auth-nav-boton:hover {
+  background: #e50914;
+  color: #fff;
+  border-color: #e50914;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(229, 9, 20, 0.3);
+}
+
+.cine-header nav .cine-nav-link.activo {
+  background: #e50914;
+  color: #fff;
+  border-color: #e50914;
+}
+
+.cine-header nav button:focus-visible {
+  outline: 2px solid #ff6068;
+  outline-offset: 3px;
+}
+
+/* CARRUSEL AUTOMATICO */
+
+.cine-inicio-carrusel {
+  width: 100%;
+  padding: 55px 0 75px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #090909, #171717, #090909);
+}
+
+.cine-inicio-carrusel-titulo {
+  max-width: 1450px;
+  margin: 0 auto 35px;
+  padding: 0 5%;
+}
+
+.cine-inicio-carrusel-titulo h2 {
+  font-size: clamp(26px, 3vw, 40px);
+  color: white;
+  font-weight: 800;
+  margin: 12px 0;
+}
+
+.cine-inicio-carrusel-titulo p {
+  color: #aaa;
+  font-size: 15px;
+}
+
+.cine-carrusel-ventana {
+  width: 100%;
+  overflow: hidden;
+  padding: 15px 0 35px;
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    black 5%,
+    black 95%,
+    transparent
+  );
+}
+
+.cine-carrusel-pista {
+  display: flex;
+  gap: 20px;
+  width: max-content;
+  animation: cine-recorrido 55s linear infinite;
+}
+
+.cine-carrusel-ventana:hover .cine-carrusel-pista,
+.cine-carrusel-ventana:focus-within .cine-carrusel-pista {
+  animation-play-state: paused;
+}
+
+.cine-carrusel-item {
+  width: 215px;
+  height: 340px;
+  position: relative;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid #303030;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #191919;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.cine-carrusel-item:hover {
+  transform: translateY(-8px);
+  border-color: #e50914;
+  box-shadow: 0 15px 35px rgba(229, 9, 20, 0.22);
+  z-index: 2;
+}
+
+.cine-carrusel-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cine-carrusel-sin-poster {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  font-size: 65px;
+}
+
+.cine-carrusel-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 55px 15px 18px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.96));
+}
+
+.cine-carrusel-info h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: white;
+  margin: 0 0 7px;
+}
+
+.cine-carrusel-info span {
+  display: block;
+  font-size: 13px;
+  color: #ccc;
+}
+
+.cine-carrusel-info strong {
+  display: block;
+  margin-top: 10px;
+  color: #ff3440;
+  font-size: 13px;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.cine-carrusel-item:hover .cine-carrusel-info strong,
+.cine-carrusel-item:focus-visible .cine-carrusel-info strong {
+  opacity: 1;
+}
+
+.cine-carrusel-item:focus-visible {
+  outline: 2px solid #ff6068;
+  outline-offset: 3px;
+}
+
+.cine-carrusel-explorar {
+  display: block;
+  width: fit-content;
+  margin: 12px auto 0;
+  padding: 14px 30px;
+  cursor: pointer;
+}
+
+@keyframes cine-recorrido {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-50% - 10px));
+  }
+}
+
+/* BOTONES GENERALES */
+
+.cine-boton {
+  border-radius: 11px;
+  font-weight: 700;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.cine-boton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(229, 9, 20, 0.3);
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+  .cine-header nav {
+    gap: 6px;
+  }
+
+  .cine-header nav .cine-nav-link,
+  .cine-header nav .auth-nav-boton {
+    padding: 9px 11px;
+    min-height: 38px;
+    font-size: 12px;
+  }
+
+  .cine-carrusel-item {
+    width: 160px;
+    height: 260px;
+  }
+
+  .cine-carrusel-pista {
+    gap: 14px;
+  }
+
+  .cine-carrusel-info h3 {
+    font-size: 14px;
+  }
+
+  @keyframes cine-recorrido {
+    to {
+      transform: translateX(calc(-50% - 7px));
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cine-carrusel-pista {
+    animation: none;
+  }
+
+  .cine-carrusel-ventana {
+    overflow-x: auto;
+  }
+}
