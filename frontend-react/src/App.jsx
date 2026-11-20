@@ -1,8 +1,66 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import {
+  enviarCorreoBienvenida,
+  enviarCorreoAlquiler
+} from "./emailjs";
+
 import "./App.css";
 import "./Auth.css";
 import "./CineAvanzado.css";
+
+/* ==========================================
+   FUNCIONES PARA LOS TRAILERES
+   ========================================== */
+
+function obtenerIdYouTube(url) {
+  if (!url) return "";
+
+  try {
+    const direccion = new URL(url);
+    const dominio = direccion.hostname.toLowerCase();
+
+    if (dominio.includes("youtu.be")) {
+      return direccion.pathname.split("/").filter(Boolean)[0] || "";
+    }
+
+    if (
+      dominio.includes("youtube.com") ||
+      dominio.includes("youtube-nocookie.com")
+    ) {
+      if (direccion.pathname === "/watch") {
+        return direccion.searchParams.get("v") || "";
+      }
+
+      if (
+        direccion.pathname.startsWith("/embed/") ||
+        direccion.pathname.startsWith("/shorts/")
+      ) {
+        return direccion.pathname.split("/")[2] || "";
+      }
+    }
+  } catch (error) {
+    return "";
+  }
+
+  return "";
+}
+
+function crearUrlTrailerFondo(url) {
+  const id = obtenerIdYouTube(url);
+
+  if (!id) return "";
+
+  return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&playsinline=1&rel=0&modestbranding=1`;
+}
+
+function crearUrlTrailerOficial(url) {
+  const id = obtenerIdYouTube(url);
+
+  if (!id) return "";
+
+  return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
+}
 
 function App() {
   const [peliculas, setPeliculas] = useState([]);
@@ -21,6 +79,8 @@ function App() {
   const [cargandoActores, setCargandoActores] = useState(false);
   const [verTodos, setVerTodos] = useState(false);
   const [mostrarTrailer, setMostrarTrailer] = useState(false);
+
+  const trailerRef = useRef(null);
 
   const [token, setToken] = useState(
     () => localStorage.getItem("cine_token") || ""
@@ -47,6 +107,10 @@ function App() {
   const [errorAlquiler, setErrorAlquiler] = useState("");
   const [alquilerExitoso, setAlquilerExitoso] = useState(null);
 
+  /* ==========================================
+     CARGAR PELICULAS
+     ========================================== */
+
   useEffect(() => {
     fetch("/api/peliculas")
       .then((respuesta) => {
@@ -57,6 +121,10 @@ function App() {
       .catch(() => setError("No se pudo conectar con el servidor."))
       .finally(() => setCargando(false));
   }, []);
+
+  /* ==========================================
+     VERIFICAR SESION
+     ========================================== */
 
   useEffect(() => {
     if (!token) {
@@ -95,9 +163,14 @@ function App() {
     };
   }, [token]);
 
+  /* ==========================================
+     NAVEGACION
+     ========================================== */
+
   useEffect(() => {
     const actualizarPagina = () => {
       const hash = window.location.hash;
+
       if (hash === "#inicio" || hash === "#peliculas") {
         setPaginaActual(hash.slice(1));
         setMostrarCuenta(false);
@@ -108,6 +181,7 @@ function App() {
     };
 
     window.addEventListener("hashchange", actualizarPagina);
+
     return () => window.removeEventListener("hashchange", actualizarPagina);
   }, []);
 
@@ -131,6 +205,10 @@ function App() {
     window.scrollTo(0, 0);
   }
 
+  /* ==========================================
+     DETALLES Y ACTORES
+     ========================================== */
+
   async function abrirDetalles(pelicula) {
     setPeliculaSeleccionada(pelicula);
     setActores([]);
@@ -139,13 +217,16 @@ function App() {
     setMostrarAlquiler(false);
     setMostrarCuenta(false);
     setCargandoActores(true);
+
     window.scrollTo(0, 0);
 
     try {
       const respuesta = await fetch(
         `/api/peliculas/${pelicula.id_pelicula}/actores`
       );
+
       if (!respuesta.ok) throw new Error("Error cargando actores");
+
       setActores(await respuesta.json());
     } catch (error) {
       console.error(error);
@@ -166,6 +247,33 @@ function App() {
     window.scrollTo(0, 0);
   }
 
+  /* ==========================================
+     PANTALLA COMPLETA DEL TRAILER
+     ========================================== */
+
+  function verTrailerPantallaCompleta() {
+    const contenedor = trailerRef.current;
+
+    if (!contenedor) return;
+
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch((error) => {
+        console.error("No se pudo salir de pantalla completa:", error);
+      });
+      return;
+    }
+
+    if (contenedor.requestFullscreen) {
+      contenedor.requestFullscreen().catch((error) => {
+        console.error("No se pudo activar pantalla completa:", error);
+      });
+    }
+  }
+
+  /* ==========================================
+     AUTENTICACION
+     ========================================== */
+
   function abrirAuth(modo = "login") {
     setModoAuth(modo);
     setMostrarAuth(true);
@@ -184,29 +292,27 @@ function App() {
 
   async function enviarAuth(evento) {
     evento.preventDefault();
+
     if (procesandoAuth) return;
 
     setErrorAuth("");
     setProcesandoAuth(true);
 
     try {
-      const ruta =
-        modoAuth === "registro"
-          ? "/api/auth/registro"
-          : "/api/auth/login";
+      const esRegistro = modoAuth === "registro";
+      const ruta = esRegistro ? "/api/auth/registro" : "/api/auth/login";
 
-      const datosEnviar =
-        modoAuth === "registro"
-          ? {
-              nombre: nombre.trim(),
-              apellido: apellido.trim(),
-              correo: correo.trim().toLowerCase(),
-              password
-            }
-          : {
-              correo: correo.trim().toLowerCase(),
-              password
-            };
+      const datosEnviar = esRegistro
+        ? {
+            nombre: nombre.trim(),
+            apellido: apellido.trim(),
+            correo: correo.trim().toLowerCase(),
+            password
+          }
+        : {
+            correo: correo.trim().toLowerCase(),
+            password
+          };
 
       const respuesta = await fetch(ruta, {
         method: "POST",
@@ -219,6 +325,7 @@ function App() {
       if (!respuesta.ok) {
         throw new Error(datos.error || "No se pudo completar la operación.");
       }
+
       if (!datos.token) {
         throw new Error("El servidor no devolvió un token de sesión.");
       }
@@ -228,7 +335,26 @@ function App() {
       setMostrarAuth(false);
       setErrorAuth("");
       setPassword("");
+
+      if (esRegistro) {
+        try {
+          await enviarCorreoBienvenida({
+            nombre: datosEnviar.nombre,
+            apellido: datosEnviar.apellido,
+            correo: datosEnviar.correo
+          });
+
+          console.log("Correo de bienvenida enviado correctamente.");
+        } catch (errorCorreo) {
+          console.error("ERROR AL ENVIAR BIENVENIDA:", errorCorreo);
+
+          alert(
+            "Tu cuenta se creó correctamente, pero no se pudo enviar el correo. Revisa la consola del navegador."
+          );
+        }
+      }
     } catch (error) {
+      console.error("Error de autenticación:", error);
       setErrorAuth(error.message);
     } finally {
       setProcesandoAuth(false);
@@ -244,6 +370,10 @@ function App() {
     volverCatalogo();
   }
 
+  /* ==========================================
+     MI CUENTA E HISTORIAL
+     ========================================== */
+
   async function cargarMisAlquileres() {
     if (!token) return;
 
@@ -254,6 +384,7 @@ function App() {
       const respuesta = await fetch("/api/mis-alquileres", {
         headers: { Authorization: `Bearer ${token}` }
       });
+
       const datos = await respuesta.json();
 
       if (!respuesta.ok) {
@@ -266,7 +397,10 @@ function App() {
           ? datos.alquileres
           : null;
 
-      if (!lista) throw new Error("El servidor devolvió un formato inesperado.");
+      if (!lista) {
+        throw new Error("El servidor devolvió un formato inesperado.");
+      }
+
       setMisAlquileres(lista);
     } catch (error) {
       setErrorMisAlquileres(error.message);
@@ -288,8 +422,13 @@ function App() {
     window.scrollTo(0, 0);
   }
 
+  /* ==========================================
+     ALQUILERES
+     ========================================== */
+
   function abrirAlquiler() {
     if (cargandoSesion) return;
+
     if (!usuario || !token) {
       abrirAuth("login");
       return;
@@ -313,16 +452,23 @@ function App() {
 
   async function confirmarAlquiler(evento) {
     evento.preventDefault();
+
     if (procesandoAlquiler) return;
 
     if (!token || !usuario) {
       setErrorAlquiler("Debes iniciar sesión.");
       return;
     }
-    if (!Number.isInteger(diasPrestamo) || diasPrestamo < 1 || diasPrestamo > 30) {
+
+    if (
+      !Number.isInteger(diasPrestamo) ||
+      diasPrestamo < 1 ||
+      diasPrestamo > 30
+    ) {
       setErrorAlquiler("Selecciona entre 1 y 30 días.");
       return;
     }
+
     if (!tarifaValida) {
       setErrorAlquiler("La película no tiene una tarifa válida.");
       return;
@@ -345,10 +491,33 @@ function App() {
       });
 
       const datos = await respuesta.json();
+
       if (!respuesta.ok) {
         throw new Error(datos.error || "No se pudo registrar el alquiler.");
       }
+
       setAlquilerExitoso(datos);
+
+      try {
+        await enviarCorreoAlquiler({
+          nombre: usuario.nombre || "",
+          correo: usuario.correo || "",
+          pelicula:
+            datos.pelicula ||
+            datos.titulo ||
+            peliculaSeleccionada.titulo,
+          id_alquiler: datos.id_alquiler ?? datos.id ?? "",
+          dias_prestamo: datos.dias_prestamo ?? diasPrestamo,
+          tarifa: tarifa.toFixed(2),
+          total: Number(
+            datos.costo_total ?? datos.subtotal ?? total
+          ).toFixed(2)
+        });
+
+        console.log("Correo de confirmación enviado correctamente.");
+      } catch (errorCorreo) {
+        console.error("No se pudo enviar el correo de alquiler:", errorCorreo);
+      }
     } catch (error) {
       setErrorAlquiler(error.message);
     } finally {
@@ -356,68 +525,178 @@ function App() {
     }
   }
 
+  /* ==========================================
+     FILTROS DEL CATALOGO
+     ========================================== */
+
   const peliculasFiltradas = peliculas
     .filter((pelicula) => {
       const titulo = String(pelicula.titulo || "").toLowerCase();
       const coincideBusqueda = titulo.includes(busqueda.trim().toLowerCase());
-      const coincideTrailer = !soloConTrailer || Boolean(pelicula.trailer_url);
+      const coincideTrailer =
+        !soloConTrailer || Boolean(pelicula.trailer_url);
+
       return coincideBusqueda && coincideTrailer;
     })
     .sort((a, b) => {
       if (ordenPeliculas === "titulo") {
         return a.titulo.localeCompare(b.titulo, "es");
       }
+
       if (ordenPeliculas === "recientes") {
         return Number(b.anio_estreno) - Number(a.anio_estreno);
       }
+
       if (ordenPeliculas === "precio-menor") {
         return Number(a.tarifa_alquiler) - Number(b.tarifa_alquiler);
       }
+
       if (ordenPeliculas === "precio-mayor") {
         return Number(b.tarifa_alquiler) - Number(a.tarifa_alquiler);
       }
+
       return 0;
     });
 
+  const peliculaDestacada = peliculas[0] || null;
+
+  const peliculasRecientes = [...peliculas]
+    .sort(
+      (a, b) =>
+        Number(b.anio_estreno || 0) - Number(a.anio_estreno || 0)
+    )
+    .slice(0, 8);
+
+  const peliculasConTrailer = peliculas
+    .filter((pelicula) => Boolean(pelicula.trailer_url))
+    .slice(0, 8);
+
+  const otrasPeliculas = peliculas.filter(
+    (pelicula) =>
+      pelicula.id_pelicula !== peliculaDestacada?.id_pelicula
+  );
+
+  /* ==========================================
+     FILAS DE PELICULAS
+     ========================================== */
+
+  function renderFila(titulo, subtitulo, lista, etiqueta) {
+    if (!lista.length) return null;
+
+    return (
+      <section className="stream-seccion">
+        <div className="stream-seccion-cabecera">
+          <div>
+            <span className="stream-mini-etiqueta">{etiqueta}</span>
+            <h2>{titulo}</h2>
+            <p>{subtitulo}</p>
+          </div>
+
+          <button onClick={irPeliculas} className="stream-ver-todo">
+            Ver catálogo <span>→</span>
+          </button>
+        </div>
+
+        <div className="stream-fila">
+          {lista.map((pelicula) => (
+            <button
+              type="button"
+              className="stream-card"
+              key={pelicula.id_pelicula}
+              onClick={() => abrirDetalles(pelicula)}
+            >
+              <div className="stream-card-imagen">
+                {pelicula.poster_url ? (
+                  <img
+                    src={pelicula.poster_url}
+                    alt={pelicula.titulo}
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="stream-poster-vacio">🎬</div>
+                )}
+
+                <span className="stream-card-play">▶</span>
+
+                {pelicula.trailer_url && (
+                  <span className="stream-card-insignia">TRÁILER</span>
+                )}
+              </div>
+
+              <div className="stream-card-texto">
+                <h3>{pelicula.titulo}</h3>
+                <p>
+                  {pelicula.anio_estreno || "Año no disponible"}
+                  {pelicula.duracion
+                    ? ` · ${pelicula.duracion} min`
+                    : ""}
+                </p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  /* ==========================================
+     INTERFAZ PRINCIPAL
+     ========================================== */
+
   return (
     <div className="cine-app">
-      <header className="cine-header">
-        <h1 onClick={irInicio} style={{ cursor: "pointer" }}>
-          ▶ CINE NOCHE
-        </h1>
 
-        <nav>
+      {/* HEADER */}
+
+      <header className="cine-header">
+        <button
+          className="cine-marca"
+          onClick={irInicio}
+          aria-label="CINE NOCHE - CLUB SAKILA, inicio"
+        >
+          <span className="cine-marca-icono">▶</span>
+
+          <span className="cine-marca-texto">
+            <span>CINE NOCHE</span>
+            <small>CLUB SAKILA</small>
+          </span>
+        </button>
+
+        <nav className="cine-navegacion">
           <button
-            type="button"
             className={`cine-nav-link ${
-              paginaActual === "inicio" && !mostrarCuenta && !peliculaSeleccionada
+              paginaActual === "inicio" &&
+              !mostrarCuenta &&
+              !peliculaSeleccionada
                 ? "activo"
                 : ""
             }`}
             onClick={irInicio}
           >
-            ⌂ Inicio
+            Inicio
           </button>
 
           <button
-            type="button"
             className={`cine-nav-link ${
-              paginaActual === "peliculas" && !mostrarCuenta && !peliculaSeleccionada
+              paginaActual === "peliculas" &&
+              !mostrarCuenta &&
+              !peliculaSeleccionada
                 ? "activo"
                 : ""
             }`}
             onClick={irPeliculas}
           >
-            🎬 Películas
+            Películas
           </button>
 
           {cargandoSesion ? (
-            <span>Verificando sesión...</span>
+            <span className="cine-sesion-cargando">Verificando...</span>
           ) : usuario ? (
             <>
               <button className="auth-nav-boton" onClick={abrirCuenta}>
                 Mi cuenta
               </button>
+
               <button
                 className="auth-nav-boton auth-salir"
                 onClick={cerrarSesion}
@@ -433,6 +712,7 @@ function App() {
               >
                 Iniciar sesión
               </button>
+
               <button
                 className="auth-nav-boton auth-registro-nav"
                 onClick={() => abrirAuth("registro")}
@@ -444,6 +724,8 @@ function App() {
         </nav>
       </header>
 
+      {/* MI CUENTA */}
+
       {mostrarCuenta && usuario ? (
         <main className="auth-cuenta-pagina">
           <button className="cine-boton" onClick={volverCatalogo}>
@@ -454,8 +736,12 @@ function App() {
             <div className="auth-avatar">
               {usuario.nombre?.charAt(0)?.toUpperCase() || "U"}
             </div>
+
             <h2>Mi cuenta</h2>
-            <p className="auth-bienvenida">Bienvenido a CINE NOCHE</p>
+
+            <p className="auth-bienvenida">
+              Bienvenido a CINE NOCHE - CLUB SAKILA
+            </p>
 
             <div className="auth-dato">
               <strong>Nombre</strong>
@@ -475,10 +761,14 @@ function App() {
             <div className="mis-alquileres">
               <h3>🎟 Mis alquileres</h3>
 
-              {cargandoMisAlquileres && <p>Cargando tus alquileres...</p>}
+              {cargandoMisAlquileres && (
+                <p>Cargando tus alquileres...</p>
+              )}
+
               {errorMisAlquileres && (
                 <p className="cine-error">{errorMisAlquileres}</p>
               )}
+
               {!cargandoMisAlquileres &&
                 !errorMisAlquileres &&
                 misAlquileres.length === 0 && (
@@ -489,12 +779,17 @@ function App() {
                 !errorMisAlquileres &&
                 misAlquileres.map((alquiler) => (
                   <div
-                    className="auth-dato"
+                    className="auth-dato alquiler-historial-item"
                     key={alquiler.id_detalle ?? alquiler.id_alquiler}
-                    style={{ marginBottom: "12px" }}
                   >
-                    <strong>🎬 {alquiler.pelicula || alquiler.titulo}</strong>
-                    <span>Número de alquiler: {alquiler.id_alquiler}</span>
+                    <strong>
+                      🎬 {alquiler.pelicula || alquiler.titulo}
+                    </strong>
+
+                    <span>
+                      Número de alquiler: {alquiler.id_alquiler}
+                    </span>
+
                     <span>
                       Fecha:{" "}
                       {alquiler.fecha_alquiler
@@ -504,14 +799,19 @@ function App() {
                           )
                         : "No disponible"}
                     </span>
+
                     <span>Días: {alquiler.dias_prestamo}</span>
+
                     <span>
                       Total: Bs.{" "}
                       {Number(
                         alquiler.subtotal ?? alquiler.costo_total ?? 0
                       ).toFixed(2)}
                     </span>
-                    <span>Estado: {alquiler.estado || "Sin estado"}</span>
+
+                    <span>
+                      Estado: {alquiler.estado || "Sin estado"}
+                    </span>
                   </div>
                 ))}
             </div>
@@ -521,71 +821,143 @@ function App() {
             </button>
           </section>
         </main>
+
       ) : peliculaSeleccionada ? (
+
         <main className="cine-detalle">
-          <button className="cine-boton" onClick={volverCatalogo}>
+
+          <button
+            className="cine-boton cine-volver"
+            onClick={volverCatalogo}
+          >
             ← Volver al catálogo
           </button>
 
-          <div className="detalle-principal">
-            {peliculaSeleccionada.poster_url ? (
-              <img
-                className="detalle-poster"
-                src={peliculaSeleccionada.poster_url}
-                alt={peliculaSeleccionada.titulo}
-              />
-            ) : (
-              <div className="cine-sin-poster">🎬</div>
-            )}
+          
+<section className="detalle-principal detalle-cinematografico">
+  {/* TRAILER DE FONDO A PANTALLA COMPLETA */}
 
-            <div className="detalle-informacion">
-              <h2>{peliculaSeleccionada.titulo}</h2>
-              <p>
-                {peliculaSeleccionada.anio_estreno} ·{" "}
-                {peliculaSeleccionada.duracion} min ·{" "}
-                {peliculaSeleccionada.clasificacion}
-              </p>
-              <p>⭐ {peliculaSeleccionada.rating || "Sin calificación"}</p>
-              <h3>Sinopsis</h3>
-              <p>{peliculaSeleccionada.sinopsis}</p>
-              <p>
-                <strong>Director:</strong> {peliculaSeleccionada.director}
-              </p>
-              <p>
-                <strong>Precio:</strong> Bs.{" "}
-                {peliculaSeleccionada.tarifa_alquiler} por día
-              </p>
+  {crearUrlTrailerFondo(peliculaSeleccionada.trailer_url) && (
+    <div className="detalle-video-fondo">
+      <iframe
+        src={crearUrlTrailerFondo(peliculaSeleccionada.trailer_url)}
+        title={`Tráiler de fondo de ${peliculaSeleccionada.titulo}`}
+        allow="autoplay; encrypted-media; picture-in-picture"
+        referrerPolicy="strict-origin-when-cross-origin"
+      />
+    </div>
+  )}
 
-              <button
-                className="cine-boton"
-                type="button"
-                onClick={abrirAlquiler}
-                disabled={cargandoSesion}
-              >
-                🎟 Alquilar película
-              </button>
+  {/* CAPA OSCURA PARA MEJORAR LA VISIBILIDAD */}
 
-              {peliculaSeleccionada.trailer_url && (
-                <button
-                  className="cine-boton"
-                  type="button"
-                  onClick={() => setMostrarTrailer(!mostrarTrailer)}
-                  style={{ marginLeft: "12px" }}
-                >
-                  {mostrarTrailer ? "✖ Cerrar tráiler" : "▶ Ver tráiler"}
-                </button>
-              )}
-            </div>
-          </div>
+  <div className="detalle-video-degradado" />
+
+  {/* CONTENIDO: POSTER A LA IZQUIERDA E INFORMACION A LA DERECHA */}
+
+  <div className="detalle-contenido-layout">
+
+    <div className="detalle-poster">
+      {peliculaSeleccionada.poster_url ? (
+        <img
+          src={peliculaSeleccionada.poster_url}
+          alt={`Póster de ${peliculaSeleccionada.titulo}`}
+        />
+      ) : (
+        <div className="detalle-poster-vacio">🎬</div>
+      )}
+    </div>
+
+    <div className="detalle-informacion">
+      <span className="stream-mini-etiqueta">
+        CINE NOCHE - CLUB SAKILA ORIGINAL
+      </span>
+
+      <h2>{peliculaSeleccionada.titulo}</h2>
+
+      <p className="detalle-metadatos">
+        {peliculaSeleccionada.anio_estreno} ·{" "}
+        {peliculaSeleccionada.duracion} min ·{" "}
+        {peliculaSeleccionada.clasificacion}
+      </p>
+
+      <p className="detalle-rating">
+        ⭐ {peliculaSeleccionada.rating || "Sin calificación"}
+      </p>
+
+      <h3>Sinopsis</h3>
+
+      <p>{peliculaSeleccionada.sinopsis}</p>
+
+      <p>
+        <strong>Director:</strong>{" "}
+        {peliculaSeleccionada.director}
+      </p>
+
+      <p>
+        <strong>Precio:</strong> Bs.{" "}
+        {peliculaSeleccionada.tarifa_alquiler} por día
+      </p>
+
+      <div className="detalle-acciones">
+        <button
+          className="cine-boton"
+          onClick={abrirAlquiler}
+          disabled={cargandoSesion}
+        >
+          🎟 Alquilar película
+        </button>
+
+        {peliculaSeleccionada.trailer_url && (
+          <button
+            className="cine-boton cine-boton-secundario"
+            onClick={() => setMostrarTrailer(!mostrarTrailer)}
+          >
+            {mostrarTrailer ? "✕ Cerrar tráiler" : "▶ Ver tráiler"}
+          </button>
+        )}
+      </div>
+
+      <div className="detalle-aviso-trailer">
+        {crearUrlTrailerFondo(peliculaSeleccionada.trailer_url)
+          ? "▶ TRÁILER REPRODUCIÉNDOSE · AUDIO DESACTIVADO"
+          : "🎬 DESCUBRE ESTA PELÍCULA"}
+      </div>
+    </div>
+  </div>
+</section>
+
+
+          {/* TRAILER OFICIAL CON PANTALLA COMPLETA */}
 
           {mostrarTrailer && peliculaSeleccionada.trailer_url && (
             <section className="detalle-trailer">
-              <h2>Tráiler oficial</h2>
-              <div className="trailer-contenedor">
+              <div className="trailer-encabezado">
+                <div>
+                  <span className="stream-mini-etiqueta">
+                    CINE NOCHE - CLUB SAKILA
+                  </span>
+
+                  <h2>Tráiler oficial</h2>
+
+                  <p>{peliculaSeleccionada.titulo}</p>
+                </div>
+
+                <button
+                  type="button"
+                  className="trailer-pantalla-completa"
+                  onClick={verTrailerPantallaCompleta}
+                >
+                  ⛶ Ver en pantalla completa
+                </button>
+              </div>
+
+              <div className="trailer-contenedor" ref={trailerRef}>
                 <iframe
-                  src={peliculaSeleccionada.trailer_url}
+                  src={crearUrlTrailerOficial(
+                    peliculaSeleccionada.trailer_url
+                  )}
                   title={`Tráiler de ${peliculaSeleccionada.titulo}`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   referrerPolicy="strict-origin-when-cross-origin"
                   allowFullScreen
                 />
@@ -593,9 +965,18 @@ function App() {
             </section>
           )}
 
+          {/* REPARTO */}
+
           <section className="detalle-reparto">
-            <h2>Reparto de la película</h2>
+            <div className="stream-seccion-cabecera">
+              <div>
+                <span className="stream-mini-etiqueta">ELENCO</span>
+                <h2>Reparto de la película</h2>
+              </div>
+            </div>
+
             {cargandoActores && <p>Cargando actores...</p>}
+
             {!cargandoActores && actores.length === 0 && (
               <p>Todavía no hay actores registrados.</p>
             )}
@@ -612,6 +993,7 @@ function App() {
                   ) : (
                     <div className="actor-sin-foto">👤</div>
                   )}
+
                   <h3>{actor.nombre}</h3>
                   <p>{actor.personaje || "Reparto"}</p>
                 </article>
@@ -630,84 +1012,155 @@ function App() {
             )}
           </section>
         </main>
+
       ) : (
+
         <>
           {paginaActual === "inicio" && (
-            <>
-              <section className="cine-hero" id="inicio">
-                <h2>Bienvenido a CINE NOCHE</h2>
-                <p>
-                  Descubre tus películas favoritas y alquílalas fácilmente.
-                </p>
+            <main className="stream-inicio">
 
-                {!usuario && !cargandoSesion && (
-                  <button
-                    className="cine-boton"
-                    onClick={() => abrirAuth("registro")}
-                    style={{ marginRight: "12px" }}
-                  >
-                    Crear mi cuenta
-                  </button>
-                )}
+              {peliculaDestacada && (
+                <section
+                  className="stream-hero"
+                  style={{
+                    backgroundImage: `linear-gradient(90deg, rgba(5,5,7,.98) 0%, rgba(5,5,7,.84) 38%, rgba(5,5,7,.24) 75%, rgba(5,5,7,.55) 100%), linear-gradient(0deg, #09090b 0%, transparent 45%), url("${peliculaDestacada.poster_url || ""}")`
+                  }}
+                >
+                  <div className="stream-hero-contenido">
+                    <span className="stream-hero-etiqueta">
+                      <span className="stream-punto" />
+                      DESTACADO EN CINE NOCHE - CLUB SAKILA
+                    </span>
 
-                <button className="cine-boton" onClick={irPeliculas}>
-                  Explorar películas
-                </button>
-              </section>
+                    <h1>{peliculaDestacada.titulo}</h1>
 
-              <section className="cine-inicio-carrusel">
-                <div className="cine-inicio-carrusel-titulo">
-                  <span className="cine-etiqueta">TU CINE EN CASA</span>
-                  <h2>Películas para disfrutar</h2>
-                  <p>
-                    Descubre nuestras películas con un recorrido automático.
-                  </p>
-                </div>
+                    <div className="stream-hero-datos">
+                      <span>{peliculaDestacada.anio_estreno}</span>
+                      <span>{peliculaDestacada.duracion} min</span>
+                      <span>{peliculaDestacada.clasificacion}</span>
 
-                {cargando && <p>Cargando películas...</p>}
-                {error && <p className="cine-error">{error}</p>}
+                      {peliculaDestacada.rating && (
+                        <span>⭐ {peliculaDestacada.rating}</span>
+                      )}
+                    </div>
 
-                {!cargando && peliculas.length > 0 && (
-                  <div className="cine-carrusel-ventana">
-                    <div className="cine-carrusel-pista">
-                      {[...peliculas, ...peliculas].map((pelicula, indice) => (
-                        <button
-                          type="button"
-                          className="cine-carrusel-item"
-                          key={`${pelicula.id_pelicula}-${indice}`}
-                          onClick={() => abrirDetalles(pelicula)}
-                          aria-label={`Ver detalles de ${pelicula.titulo}`}
-                        >
-                          {pelicula.poster_url ? (
-                            <img
-                              src={pelicula.poster_url}
-                              alt={pelicula.titulo}
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="cine-carrusel-sin-poster">🎬</div>
-                          )}
+                    <p className="stream-hero-sinopsis">
+                      {peliculaDestacada.sinopsis ||
+                        "Descubre esta película disponible en nuestro catálogo."}
+                    </p>
 
-                          <div className="cine-carrusel-info">
-                            <h3>{pelicula.titulo}</h3>
-                            <span>{pelicula.anio_estreno}</span>
-                            <strong>Ver detalles →</strong>
-                          </div>
-                        </button>
-                      ))}
+                    <div className="stream-hero-acciones">
+                      <button
+                        className="stream-boton-principal"
+                        onClick={() => abrirDetalles(peliculaDestacada)}
+                      >
+                        <span>▶</span> Ver película
+                      </button>
+
+                      <button
+                        className="stream-boton-secundario"
+                        onClick={irPeliculas}
+                      >
+                        Explorar catálogo
+                      </button>
+                    </div>
+
+                    <div className="stream-hero-precio">
+                      Disponible para alquilar · Bs.{" "}
+                      {Number(
+                        peliculaDestacada.tarifa_alquiler || 0
+                      ).toFixed(2)}{" "}
+                      por día
                     </div>
                   </div>
-                )}
 
-                <button
-                  type="button"
-                  className="cine-boton cine-carrusel-explorar"
-                  onClick={irPeliculas}
-                >
-                  Explorar catálogo completo
-                </button>
-              </section>
-            </>
+                  <div className="stream-hero-indicador">
+                    <span>01</span>
+                    <div />
+                    <span>DESTACADO</span>
+                  </div>
+                </section>
+              )}
+
+              {cargando && (
+                <div className="stream-cargando">
+                  <span className="stream-spinner" />
+                  <p>Preparando tu experiencia cinematográfica...</p>
+                </div>
+              )}
+
+              {error && <p className="cine-error">{error}</p>}
+
+              {!cargando && !error && peliculas.length > 0 && (
+                <>
+                  <section className="stream-bienvenida">
+                    <div>
+                      <span className="stream-mini-etiqueta">
+                        BIENVENIDO A CINE NOCHE - CLUB SAKILA
+                      </span>
+
+                      <h2>Historias que merecen ser vistas.</h2>
+
+                      <p>
+                        Explora el catálogo, conoce a sus protagonistas y
+                        disfruta del cine desde casa.
+                      </p>
+                    </div>
+
+                    {!usuario && (
+                      <button
+                        className="stream-boton-principal"
+                        onClick={() => abrirAuth("registro")}
+                      >
+                        Crear cuenta <span>→</span>
+                      </button>
+                    )}
+                  </section>
+
+                  {renderFila(
+                    "Selección para ti",
+                    "Una selección de títulos disponibles en nuestro catálogo.",
+                    otrasPeliculas.slice(0, 8),
+                    "RECOMENDADOS"
+                  )}
+
+                  {renderFila(
+                    "Las más recientes",
+                    "Descubre las películas ordenadas por año de estreno.",
+                    peliculasRecientes,
+                    "NOVEDADES"
+                  )}
+
+                  {renderFila(
+                    "Con tráiler disponible",
+                    "Mira un adelanto antes de elegir tu próxima película.",
+                    peliculasConTrailer,
+                    "MIRA ANTES DE ALQUILAR"
+                  )}
+
+                  <section className="stream-final">
+                    <div className="stream-final-icono">▶</div>
+
+                    <span className="stream-mini-etiqueta">
+                      TU PRÓXIMA HISTORIA COMIENZA AQUÍ
+                    </span>
+
+                    <h2>La noche es mejor con una buena película.</h2>
+
+                    <p>
+                      Encuentra tu próxima película favorita en CINE NOCHE - CLUB SAKILA.
+                    </p>
+
+                    <button
+                      className="stream-boton-principal"
+                      onClick={irPeliculas}
+                    >
+                      Explorar todas las películas →
+                    </button>
+                  </section>
+                </>
+              )}
+            </main>
           )}
 
           {paginaActual === "peliculas" && (
@@ -717,8 +1170,12 @@ function App() {
             >
               <div className="cine-catalogo-encabezado">
                 <div>
-                  <span className="cine-etiqueta">TU CINE EN CASA</span>
+                  <span className="stream-mini-etiqueta">
+                    CATÁLOGO CINE NOCHE - CLUB SAKILA
+                  </span>
+
                   <h2>Explora nuestro catálogo</h2>
+
                   <p>
                     Encuentra grandes historias, descubre sus protagonistas
                     y alquila tus películas favoritas.
@@ -733,6 +1190,7 @@ function App() {
               <div className="cine-herramientas">
                 <label className="cine-buscador">
                   <span>⌕</span>
+
                   <input
                     type="search"
                     placeholder="Buscar películas por título..."
@@ -744,7 +1202,9 @@ function App() {
                 <select
                   className="cine-ordenar"
                   value={ordenPeliculas}
-                  onChange={(evento) => setOrdenPeliculas(evento.target.value)}
+                  onChange={(evento) =>
+                    setOrdenPeliculas(evento.target.value)
+                  }
                   aria-label="Ordenar películas"
                 >
                   <option value="destacadas">Destacadas</option>
@@ -762,17 +1222,20 @@ function App() {
                       setSoloConTrailer(evento.target.checked)
                     }
                   />
+
                   Con tráiler
                 </label>
               </div>
 
               {cargando && <p>Cargando películas...</p>}
+
               {error && <p className="cine-error">{error}</p>}
 
               {!cargando && !error && peliculasFiltradas.length === 0 && (
                 <div className="cine-sin-resultados">
                   <h3>No encontramos películas</h3>
                   <p>Prueba con otro título o cambia los filtros.</p>
+
                   <button
                     className="cine-boton"
                     onClick={() => {
@@ -808,7 +1271,7 @@ function App() {
 
                       {pelicula.trailer_url && (
                         <span className="cine-poster-insignia">
-                          ▶ Tráiler
+                          ▶ TRÁILER
                         </span>
                       )}
                     </div>
@@ -818,6 +1281,7 @@ function App() {
 
                       <div className="cine-tarjeta-datos">
                         <span>{pelicula.anio_estreno || "Sin año"}</span>
+
                         <span>
                           {pelicula.duracion
                             ? `${pelicula.duracion} min`
@@ -826,7 +1290,8 @@ function App() {
                       </div>
 
                       <p className="cine-tarjeta-precio">
-                        Bs. {Number(pelicula.tarifa_alquiler || 0).toFixed(2)}
+                        Bs.{" "}
+                        {Number(pelicula.tarifa_alquiler || 0).toFixed(2)}
                         <small> / día</small>
                       </p>
 
@@ -844,6 +1309,8 @@ function App() {
           )}
         </>
       )}
+
+      {/* MODAL DE INICIO DE SESION Y REGISTRO */}
 
       {mostrarAuth && (
         <div className="auth-fondo" onClick={cerrarAuth}>
@@ -864,22 +1331,25 @@ function App() {
               ✕
             </button>
 
-            <h2 className="auth-logo">▶ CINE NOCHE</h2>
+            <h2 className="auth-logo">▶ CINE NOCHE - CLUB SAKILA</h2>
+
             <h3 id="auth-titulo">
               {modoAuth === "registro"
                 ? "Crear una cuenta"
                 : "Iniciar sesión"}
             </h3>
+
             <p className="auth-descripcion">
               {modoAuth === "registro"
                 ? "Regístrate para alquilar tus películas favoritas."
-                : "Ingresa a tu cuenta para disfrutar de CINE NOCHE."}
+                : "Ingresa a tu cuenta para disfrutar de CINE NOCHE - CLUB SAKILA."}
             </p>
 
             <form onSubmit={enviarAuth}>
               {modoAuth === "registro" && (
                 <>
                   <label htmlFor="auth-nombre">Nombre</label>
+
                   <input
                     id="auth-nombre"
                     type="text"
@@ -892,6 +1362,7 @@ function App() {
                   />
 
                   <label htmlFor="auth-apellido">Apellido</label>
+
                   <input
                     id="auth-apellido"
                     type="text"
@@ -906,6 +1377,7 @@ function App() {
               )}
 
               <label htmlFor="auth-correo">Correo electrónico</label>
+
               <input
                 id="auth-correo"
                 type="email"
@@ -917,6 +1389,7 @@ function App() {
               />
 
               <label htmlFor="auth-password">Contraseña</label>
+
               <input
                 id="auth-password"
                 type="password"
@@ -976,6 +1449,8 @@ function App() {
         </div>
       )}
 
+      {/* MODAL DE ALQUILER */}
+
       {mostrarAlquiler && peliculaSeleccionada && (
         <div className="alquiler-fondo" onClick={cerrarAlquiler}>
           <div
@@ -998,6 +1473,7 @@ function App() {
             {alquilerExitoso ? (
               <div className="alquiler-exito">
                 <h2>✅ ¡Alquiler registrado!</h2>
+
                 <p>
                   Tu alquiler de{" "}
                   <strong>
@@ -1006,29 +1482,36 @@ function App() {
                   </strong>{" "}
                   se guardó correctamente.
                 </p>
+
                 <p>
                   Número de alquiler:{" "}
                   <strong>{alquilerExitoso.id_alquiler}</strong>
                 </p>
+
                 <p>Días: {alquilerExitoso.dias_prestamo}</p>
+
                 <h3>
                   Total: Bs.{" "}
-                  {Number(alquilerExitoso.costo_total).toFixed(2)}
+                  {Number(
+                    alquilerExitoso.costo_total ??
+                    alquilerExitoso.subtotal ??
+                    total
+                  ).toFixed(2)}
                 </h3>
-                <button
-                  className="cine-boton"
-                  type="button"
-                  onClick={cerrarAlquiler}
-                >
+
+                <button className="cine-boton" onClick={cerrarAlquiler}>
                   Cerrar
                 </button>
               </div>
             ) : (
               <>
                 <h2 id="titulo-alquiler">🎟 Confirmar alquiler</h2>
+
                 <p>
-                  Película: <strong>{peliculaSeleccionada.titulo}</strong>
+                  Película:{" "}
+                  <strong>{peliculaSeleccionada.titulo}</strong>
                 </p>
+
                 <p className="alquiler-aviso">
                   Estás alquilando con la cuenta de{" "}
                   <strong>
@@ -1067,9 +1550,11 @@ function App() {
                           : "No disponible"}
                       </strong>
                     </p>
+
                     <p>
                       Duración: <strong>{diasPrestamo} días</strong>
                     </p>
+
                     <h3>
                       Total:{" "}
                       {tarifaValida
@@ -1100,8 +1585,19 @@ function App() {
         </div>
       )}
 
+      {/* FOOTER */}
+
       <footer className="cine-footer">
-        CINE NOCHE — Club Sakila
+        <div className="cine-footer-marca">
+          ▶ CINE NOCHE - CLUB SAKILA
+        </div>
+
+        <p>Tu cine en casa. Historias para cada noche.</p>
+
+        <span>
+          © {new Date().getFullYear()} CINE NOCHE - CLUB SAKILA.
+          Todos los derechos reservados.
+        </span>
       </footer>
     </div>
   );

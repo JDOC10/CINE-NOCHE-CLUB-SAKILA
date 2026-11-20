@@ -1,264 +1,399 @@
 
-.auth-nav-boton {
-  background: transparent;
-  border: none;
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 10px 14px;
-  border-radius: 6px;
-}
+/* =====================================================
+   CINE NOCHE - LOGIN, REGISTRO Y ALQUILER
+   ===================================================== */
 
-.auth-nav-boton:hover {
-  color: #e50914;
-}
+/* ================= FONDOS ================= */
 
-.auth-registro-nav {
-  background: #e50914;
-  color: white;
-}
-
-.auth-registro-nav:hover {
-  background: #b20710;
-  color: white;
-}
-
-.auth-salir {
-  border: 1px solid #555;
-}
-
-.auth-fondo {
+.auth-fondo,
+.alquiler-fondo {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
+  z-index: 2000;
   display: flex;
-  justify-content: center;
   align-items: center;
-  z-index: 9999;
-  padding: 20px;
+  justify-content: center;
+  padding: 18px;
   overflow-y: auto;
+  background: rgba(0,0,0,.82);
+  backdrop-filter: blur(8px);
+  animation: modalFondo .2s ease;
 }
+
+@keyframes modalFondo {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ================= LOGIN Y REGISTRO ================= */
 
 .auth-modal {
   position: relative;
-  background: #181818;
-  color: #fff;
   width: 100%;
-  max-width: 430px;
-  max-height: 95vh;
+  max-width: 440px;
+  max-height: 94vh;
   overflow-y: auto;
-  padding: 35px;
-  border: 1px solid #333;
-  border-radius: 12px;
-  box-shadow: 0 15px 55px rgba(0, 0, 0, 0.65);
+  padding: 42px 39px 35px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 9px;
+  background: linear-gradient(145deg, #202020, #111);
+  box-shadow: 0 25px 90px rgba(0,0,0,.8);
+  animation: modalEntrada .25s ease;
 }
 
-.auth-cerrar {
+@keyframes modalEntrada {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.auth-cerrar,
+.alquiler-cerrar {
   position: absolute;
-  right: 17px;
-  top: 15px;
-  background: transparent;
+  top: 14px;
+  right: 15px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: #303030;
   color: white;
-  border: none;
-  font-size: 25px;
-  cursor: pointer;
+  font-size: 17px;
+  transition: .2s ease;
+}
+
+.auth-cerrar:hover,
+.alquiler-cerrar:hover {
+  background: #e50914;
+  transform: rotate(90deg);
+}
+
+.auth-cerrar:disabled,
+.alquiler-cerrar:disabled {
+  opacity: .5;
+  cursor: not-allowed;
 }
 
 .auth-logo {
+  margin-bottom: 24px;
   color: #e50914;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: -1.2px;
   text-align: center;
-  font-size: 25px;
-  margin-bottom: 25px;
 }
 
-.auth-modal h3 {
-  font-size: 25px;
-  margin-bottom: 10px;
+.auth-modal > h3 {
+  margin-bottom: 9px;
+  color: white;
+  font-size: 27px;
+  font-weight: 900;
+  letter-spacing: -.7px;
   text-align: center;
 }
 
 .auth-descripcion {
-  text-align: center;
+  margin-bottom: 27px;
   color: #aaa;
-  font-size: 14px;
-  margin-bottom: 25px;
+  font-size: 12px;
+  line-height: 1.7;
+  text-align: center;
 }
+
+/* ================= CAMPOS ================= */
 
 .auth-modal form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
 }
 
-.auth-modal label {
-  color: #eee;
-  font-size: 14px;
-  font-weight: bold;
-  margin-top: 8px;
+.auth-modal form label {
+  margin-top: 7px;
+  color: #ddd;
+  font-size: 11px;
+  font-weight: 700;
 }
 
-.auth-modal input {
+.auth-modal form input {
   width: 100%;
-  box-sizing: border-box;
-  padding: 13px;
-  border: 1px solid #555;
-  border-radius: 6px;
-  background: #252525;
-  color: white;
-  font-size: 15px;
-}
-
-.auth-modal input:focus {
+  min-height: 47px;
+  padding: 0 14px;
+  border: 1px solid #414141;
+  border-radius: 4px;
   outline: none;
-  border-color: #e50914;
+  background: #292929;
+  color: white;
+  font-size: 12px;
+  transition: border-color .2s ease, box-shadow .2s ease;
 }
 
-.auth-enviar {
-  width: 100%;
-  margin-top: 20px;
-  padding: 14px;
-  font-weight: bold;
+.auth-modal form input::placeholder {
+  color: #929292;
 }
+
+.auth-modal form input:focus {
+  border-color: #e50914;
+  box-shadow: 0 0 0 2px rgba(229,9,20,.13);
+}
+
+.auth-modal form input:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+/* ================= BOTON PRINCIPAL ================= */
+
+.auth-modal form .auth-enviar {
+  width: 100%;
+  min-height: 47px;
+  margin-top: 15px;
+  border: 0;
+  border-radius: 4px;
+  background: #e50914;
+  color: white;
+  font-size: 13px;
+  font-weight: 900;
+  transition: .2s ease;
+}
+
+.auth-modal form .auth-enviar:hover {
+  background: #f6121d;
+  box-shadow: 0 6px 20px rgba(229,9,20,.22);
+}
+
+.auth-modal form .auth-enviar:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+/* ================= CAMBIAR DE MODO ================= */
 
 .auth-cambiar {
-  text-align: center;
   margin-top: 25px;
-  color: #aaa;
-  font-size: 14px;
+  color: #999;
+  font-size: 11px;
+  line-height: 1.8;
+  text-align: center;
 }
 
 .auth-cambiar button {
-  border: none;
-  background: none;
-  color: #e50914;
-  cursor: pointer;
-  font-weight: bold;
-  margin-left: 7px;
+  margin-left: 5px;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .auth-cambiar button:hover {
+  color: #e50914;
   text-decoration: underline;
 }
 
-.auth-cuenta-pagina {
-  min-height: 75vh;
-  padding: 40px 8%;
-  background: #0b0b0b;
+/* ================= MENSAJES ================= */
+
+.auth-modal .cine-error {
+  margin: 7px 0;
+  padding: 11px;
+  border: 1px solid rgba(229,9,20,.35);
+  border-radius: 4px;
+  background: rgba(229,9,20,.1);
+  color: #ff9297;
+  font-size: 11px;
+}
+
+/* ================= MODAL DE ALQUILER ================= */
+
+.alquiler-modal {
+  position: relative;
+  width: 100%;
+  max-width: 510px;
+  max-height: 94vh;
+  overflow-y: auto;
+  padding: 39px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 9px;
+  background: linear-gradient(145deg, #202020, #101010);
+  box-shadow: 0 25px 90px rgba(0,0,0,.8);
+  animation: modalEntrada .25s ease;
+}
+
+.alquiler-modal > h2 {
+  margin-bottom: 22px;
+  color: white;
+  font-size: 25px;
+  font-weight: 900;
+  letter-spacing: -.7px;
+}
+
+.alquiler-modal > p {
+  margin-bottom: 12px;
+  color: #bbb;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.alquiler-modal > p strong {
   color: white;
 }
 
-.auth-cuenta-tarjeta {
-  max-width: 550px;
-  margin: 35px auto;
-  padding: 35px;
-  background: #181818;
-  border: 1px solid #333;
-  border-radius: 12px;
+.alquiler-aviso {
+  padding: 12px;
+  border-left: 2px solid #e50914;
+  background: rgba(229,9,20,.07);
+}
+
+.alquiler-modal form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.alquiler-modal form label {
+  color: #ddd;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.alquiler-modal form select {
+  width: 100%;
+  min-height: 45px;
+  padding: 0 12px;
+  border: 1px solid #414141;
+  border-radius: 4px;
+  background: #292929;
+  color: white;
+  font-size: 12px;
+  outline: none;
+}
+
+.alquiler-modal form select:focus {
+  border-color: #e50914;
+}
+
+/* ================= RESUMEN DE PRECIO ================= */
+
+.alquiler-resumen {
+  margin: 12px 0;
+  padding: 20px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 6px;
+  background: #171717;
+}
+
+.alquiler-resumen p {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 13px;
+  color: #aaa;
+  font-size: 12px;
+}
+
+.alquiler-resumen p strong {
+  color: white;
+  text-align: right;
+}
+
+.alquiler-resumen h3 {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #383838;
+  color: white;
+  font-size: 19px;
+  font-weight: 900;
+}
+
+/* ================= BOTONES DE ALQUILER ================= */
+
+.alquiler-modal form > button,
+.alquiler-modal .cine-boton {
+  min-height: 46px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 4px;
+  background: #e50914;
+  color: white;
+  font-size: 12px;
+  font-weight: 900;
+  transition: .2s ease;
+}
+
+.alquiler-modal form > button:hover,
+.alquiler-modal .cine-boton:hover {
+  background: #f6121d;
+}
+
+.alquiler-modal form > button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+/* ================= ALQUILER EXITOSO ================= */
+
+.alquiler-exito {
+  padding: 17px 5px 8px;
   text-align: center;
 }
 
-.auth-avatar {
-  width: 85px;
-  height: 85px;
-  border-radius: 50%;
-  background: #e50914;
-  color: white;
-  font-size: 40px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 20px;
-}
-
-.auth-cuenta-tarjeta h2 {
-  font-size: 27px;
-}
-
-.auth-bienvenida {
-  color: #aaa;
-  margin-bottom: 25px;
-}
-
-.auth-dato {
-  display: flex;
-  flex-direction: column;
-  text-align: left;
-  gap: 8px;
-  padding: 15px;
-  background: #242424;
-  border-radius: 7px;
-  margin-bottom: 15px;
-  overflow-wrap: anywhere;
-}
-
-.auth-dato strong {
-  color: #aaa;
-  font-size: 13px;
-}
-
-.auth-dato span {
-  color: white;
-  font-size: 16px;
-}
-
-.auth-nota {
-  color: #aaa;
-  font-size: 13px;
-  margin: 20px 0;
-}
-
-@media (max-width: 600px) {
-  .auth-modal {
-    padding: 25px 20px;
-  }
-
-  .auth-cuenta-pagina {
-    padding: 25px 15px;
-  }
-
-  .auth-cuenta-tarjeta {
-    padding: 25px 18px;
-  }
-
-  .auth-nav-boton {
-    padding: 8px;
-    font-size: 12px;
-  }
-}
-
-.mis-alquileres {
-  width: 100%;
-  margin-top: 25px;
-  margin-bottom: 25px;
-  text-align: left;
-}
-
-.mis-alquileres h3 {
-  color: #ffffff;
-  font-size: 20px;
+.alquiler-exito h2 {
   margin-bottom: 18px;
-  border-bottom: 2px solid #e50914;
-  padding-bottom: 10px;
+  color: white;
+  font-size: 25px;
+  font-weight: 900;
 }
 
-.mis-alquileres .auth-dato {
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-  padding: 16px;
-  background: #242424;
-  border: 1px solid #383838;
-  border-radius: 8px;
+.alquiler-exito p {
+  margin-bottom: 12px;
+  color: #bbb;
+  font-size: 12px;
+  line-height: 1.7;
 }
 
-.mis-alquileres .auth-dato strong {
-  color: #ffffff;
-  font-size: 15px;
+.alquiler-exito p strong {
+  color: white;
 }
 
-.mis-alquileres .auth-dato span {
-  color: #cccccc;
-  font-size: 13px;
+.alquiler-exito h3 {
+  margin: 22px 0;
+  color: #fff;
+  font-size: 23px;
+  font-weight: 900;
+}
+
+.alquiler-exito .cine-boton {
+  min-width: 150px;
+  min-height: 43px;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 520px) {
+  .auth-fondo,
+  .alquiler-fondo {
+    padding: 10px;
+  }
+
+  .auth-modal,
+  .alquiler-modal {
+    padding: 39px 22px 26px;
+  }
+
+  .auth-modal > h3,
+  .alquiler-modal > h2 {
+    font-size: 23px;
+  }
 }
