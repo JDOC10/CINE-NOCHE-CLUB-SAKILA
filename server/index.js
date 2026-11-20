@@ -39,7 +39,17 @@ async function consultarTMDB(ruta, parametros = {}) {
 
   return respuesta.json();
 }
-const pool=new Pool({host:process.env.DB_HOST||'localhost',port:Number(process.env.DB_PORT||5432),database:process.env.DB_NAME||'Club Sakila',user:process.env.DB_USER||'postgres',password:process.env.DB_PASSWORD,connectionTimeoutMillis:5000});
+const pool = new Pool({
+  host: process.env.DB_HOST || "localhost",
+  port: Number(process.env.DB_PORT || 5432),
+  database: process.env.DB_NAME || "Club Sakila",
+  user: process.env.DB_USER || "postgres",
+  password: process.env.DB_PASSWORD,
+  ssl: process.env.DB_SSL === "true"
+    ? { rejectUnauthorized: false }
+    : false,
+  connectionTimeoutMillis: 10000
+});
 app.use(express.json());
 app.use(express.static(path.join(__dirname,'..')));
 app.get('/api/estado',async(req,res)=>{try{await pool.query('SELECT 1');res.json({ok:true,base:process.env.DB_NAME});}catch(e){res.status(503).json({ok:false,error:'No se pudo conectar a PostgreSQL. Revisa el archivo .env y que el servidor esté encendido.'});}});
