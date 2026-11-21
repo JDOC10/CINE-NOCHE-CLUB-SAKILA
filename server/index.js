@@ -217,6 +217,459 @@ app.get(
   }
 );
 
+
+// ADMINISTRAR PELICULAS
+
+app.get(
+  "/api/admin/peliculas",
+  verificarSesion,
+  verificarAdmin,
+  async (req, res) => {
+    try {
+      const resultado = await pool.query(
+        `SELECT
+          id_pelicula,
+          titulo,
+          sinopsis,
+          anio_estreno,
+          clasificacion,
+          duracion,
+          tarifa_alquiler,
+          rating,
+          director,
+          poster_url,
+          trailer_url
+         FROM public.pelicula
+         ORDER BY id_pelicula DESC`
+      );
+
+      res.json(resultado.rows);
+
+    } catch (error) {
+      console.error("Error consultando películas admin:", error);
+
+      res.status(500).json({
+        error: "No se pudieron consultar las películas"
+      });
+    }
+  }
+);
+
+// VALIDAR DATOS DE PELICULA
+
+function validarDatosPelicula(datos) {
+  const titulo = String(datos.titulo || "").trim();
+  const sinopsis = String(datos.sinopsis || "").trim();
+  const clasificacion = String(datos.clasificacion || "").trim();
+  const director = String(datos.director || "").trim();
+
+  const anio = datos.anio_estreno === "" ||
+    datos.anio_estreno == null
+    ? null
+    : Number(datos.anio_estreno);
+
+  const duracion = datos.duracion === "" ||
+    datos.duracion == null
+    ? null
+    : Number(datos.duracion);
+
+  const tarifa = Number(datos.tarifa_alquiler);
+  
+  const rating = datos.rating === "" ||
+    datos.rating == null
+    ? null
+    : Number(datos.rating);
+
+  function validarUrl(valor) {
+    if (!valor) return null;
+
+    try {
+      const url = new URL(String(valor));
+
+      if (!["http:", "https:"].includes(url.protocol)) {
+        return false;
+      }
+
+      return url.toString();
+
+    } catch {
+      return false;
+    }
+  }
+
+  const poster = validarUrl(datos.poster_url);
+  const trailer = validarUrl(datos.trailer_url);
+
+  if (!titulo || titulo.length > 255) {
+    return { error: "El título es obligatorio y no debe superar 255 caracteres" };
+  }
+
+  if (
+    anio !== null &&
+    (!Number.isInteger(anio) || anio < 1888 || anio > 2100)
+  ) {
+    return { error: "El año de estreno no es válido" };
+  }
+
+  if (
+    duracion !== null &&
+    (!Number.isInteger(duracion) || duracion < 1 || duracion > 600)
+  ) {
+    return { error: "La duración debe estar entre 1 y 600 minutos" };
+  }
+
+  if (!Number.isFinite(tarifa) || tarifa < 0) {
+    return { error: "La tarifa de alquiler no es válida" };
+  }
+
+  if (
+    rating !== null &&
+    (!Number.isFinite(rating) || rating < 0 || rating > 10)
+  ) {
+    return { error: "El rating debe estar entre 0 y 10" };
+  }
+
+  if (poster === false || trailer === false) {
+    return { error: "La dirección del póster o tráiler no es válida" };
+  }
+
+  return {
+    valores: [
+      titulo,
+      sinopsis || null,
+      anio,
+      clasificacion || null,
+      duracion,
+      tarifa,
+      rating,
+      director || null,
+      poster,
+      trailer
+    ]
+  };
+}
+
+// AGREGAR PELICULA
+
+app.post(
+  "/api/admin/peliculas",
+  verificarSesion,
+  verificarAdmin,
+  async (req, res) => {
+    try {
+      const validacion = validarDatosPelicula(req.body);
+
+      if (validacion.error) {
+        return res.status(400).json({
+          error: validacion.error
+        });
+      }
+
+      const resultado = await pool.query(
+        `INSERT INTO public.pelicula (
+          titulo,
+          sinopsis,
+          anio_estreno,
+          clasificacion,
+          duracion,
+          tarifa_alquiler,
+          rating,
+          director,
+          poster_url,
+          trailer_url
+        )
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+        RETURNING *`,
+        validacion.valores
+      );
+
+      res.status(201).json({
+        mensaje: "Película agregada correctamente",
+        pelicula: resultado.rows[0]
+      });
+
+    } catch (error) {
+      console.error("Error agregando película:", error);
+
+      res.status(500).json({
+        error: "No se pudo agregar la película"
+      });
+    }
+  }
+);
+
+// EDITAR PELICULA
+
+app.put(
+  "/api/admin/peliculas/:id",
+  verificarSesion,
+  verificarAdmin,
+  async (req, res) => {
+    const id = Number(req.params.id);
+
+    if (!Number.isSafeInteger(id) || id <= 0) {
+      return res.status(400).json({
+        error: "ID de película inválido"
+      });
+    }
+
+    try {
+      const validacion = validarDatosPelicula(req.body);
+
+      if (validacion.error) {
+        return res.status(400).json({
+          error: validacion.error
+        });
+      }
+
+      const resultado = await pool.query(
+        `UPDATE public.pelicula
+         SET
+          titulo = $1,
+          sinopsis = $2,
+          anio_estreno = $3,
+          clasificacion = $4,
+          duracion = $5,
+          tarifa_alquiler = $6,
+          rating = $7,
+          director = $8,
+          poster_url = $9,
+          trailer_url = $10
+         WHERE id_pelicula = $11
+         RETURNING *`,
+        [...validacion.valores, id]
+      );
+
+      if (resultado.rows.length === 0) {
+        return res.status(404).json({
+          error: "Película no encontrada"
+        });
+      }
+
+      res.json({
+        mensaje: "Película actualizada correctamente",
+        pelicula: resultado.rows[0]
+      });
+
+    } catch (error) {
+      console.error("Error editando película:", error);
+
+      res.status(500).json({
+        error: "No se pudo actualizar la película"
+      });
+    }
+  }
+);
+
+
+ // ELIMINAR PELICULA DE FORMA SEGURA
+
+app.delete(
+  "/api/admin/peliculas/:id",
+  verificarSesion,
+  verificarAdmin,
+  async (req, res) => {
+    const id = Number(req.params.id);
+
+    if (!Number.isSafeInteger(id) || id <= 0) {
+      return res.status(400).json({
+        error: "ID de película inválido"
+      });
+    }
+
+    try {
+      const pelicula = await pool.query(
+        `SELECT id_pelicula, titulo
+         FROM public.pelicula
+         WHERE id_pelicula = $1`,
+        [id]
+      );
+
+      if (pelicula.rows.length === 0) {
+        return res.status(404).json({
+          error: "Película no encontrada"
+        });
+      }
+
+      const relaciones = await pool.query(
+        `SELECT
+          EXISTS (
+            SELECT 1 FROM public.detalle_alquiler
+            WHERE id_pelicula = $1
+          ) AS tiene_alquileres,
+
+          EXISTS (
+            SELECT 1 FROM public.pelicula_actor
+            WHERE id_pelicula = $1
+          ) AS tiene_actores,
+
+          EXISTS (
+            SELECT 1 FROM public.pelicula_categoria
+            WHERE id_pelicula = $1
+          ) AS tiene_categorias,
+
+          EXISTS (
+            SELECT 1 FROM public.wishlist
+            WHERE id_pelicula = $1
+          ) AS tiene_favoritos`,
+        [id]
+      );
+
+      const datos = relaciones.rows[0];
+
+      if (
+        datos.tiene_alquileres ||
+        datos.tiene_actores ||
+        datos.tiene_categorias ||
+        datos.tiene_favoritos
+      ) {
+        return res.status(409).json({
+          error: "No se puede eliminar esta película porque tiene información relacionada",
+          relaciones: datos
+        });
+      }
+
+      await pool.query(
+        `DELETE FROM public.pelicula
+         WHERE id_pelicula = $1`,
+        [id]
+      );
+
+      res.json({
+        mensaje: "Película eliminada correctamente",
+        titulo: pelicula.rows[0].titulo
+      });
+
+    } catch (error) {
+      console.error("Error eliminando película:", error);
+
+      if (error.code === "23503") {
+        return res.status(409).json({
+          error: "No se puede eliminar porque existen registros relacionados"
+        });
+      }
+
+      res.status(500).json({
+        error: "No se pudo eliminar la película"
+      });
+    }
+  }
+);
+
+
+ // ADMINISTRAR USUARIOS
+
+app.get(
+  "/api/admin/usuarios",
+  verificarSesion,
+  verificarAdmin,
+  async (req, res) => {
+    try {
+      const resultado = await pool.query(
+        `SELECT
+          id_socio,
+          codigo_socio,
+          nombre,
+          apellido,
+          correo,
+          rol
+         FROM public.socio
+         ORDER BY id_socio ASC`
+      );
+
+      res.json(resultado.rows);
+
+    } catch (error) {
+      console.error("Error consultando usuarios:", error);
+
+      res.status(500).json({
+        error: "No se pudieron consultar los usuarios"
+      });
+    }
+  }
+);
+
+
+// CAMBIAR ROL DE USUARIOS
+
+app.patch(
+  "/api/admin/usuarios/:id/rol",
+  verificarSesion,
+  verificarAdmin,
+  async (req, res) => {
+    const id = Number(req.params.id);
+    const { rol } = req.body;
+
+    if (!Number.isSafeInteger(id) || id <= 0) {
+      return res.status(400).json({
+        error: "ID de usuario inválido"
+      });
+    }
+
+    if (!["admin", "cliente"].includes(rol)) {
+      return res.status(400).json({
+        error: "El rol debe ser admin o cliente"
+      });
+    }
+
+    if (id === req.idSocio) {
+      return res.status(400).json({
+        error: "No puedes cambiar tu propio rol"
+      });
+    }
+
+    try {
+      const usuario = await pool.query(
+        `SELECT id_socio, rol
+         FROM public.socio
+         WHERE id_socio = $1`,
+        [id]
+      );
+
+      if (usuario.rows.length === 0) {
+        return res.status(404).json({
+          error: "Usuario no encontrado"
+        });
+      }
+
+      if (usuario.rows[0].rol === "admin" && rol === "cliente") {
+        const administradores = await pool.query(
+          `SELECT COUNT(*) AS total
+           FROM public.socio
+           WHERE rol = 'admin'`
+        );
+
+        if (Number(administradores.rows[0].total) <= 1) {
+          return res.status(400).json({
+            error: "No puedes quitar el último administrador"
+          });
+        }
+      }
+
+      const resultado = await pool.query(
+        `UPDATE public.socio
+         SET rol = $1
+         WHERE id_socio = $2
+         RETURNING id_socio, nombre, apellido, correo, rol`,
+        [rol, id]
+      );
+
+      res.json({
+        mensaje: "Rol actualizado correctamente",
+        usuario: resultado.rows[0]
+      });
+
+    } catch (error) {
+      console.error("Error cambiando rol:", error);
+
+      res.status(500).json({
+        error: "No se pudo cambiar el rol del usuario"
+      });
+    }
+  }
+);
+
+
 // PELÍCULAS
 
 app.get("/api/peliculas", async (req, res) => {
@@ -684,7 +1137,6 @@ app.post("/api/auth/registro", async (req, res) => {
 });
 
 // INICIO DE SESIÓN
-
 app.post("/api/auth/login", async (req, res) => {
   try {
     const correo = String(req.body.correo || "")
@@ -705,7 +1157,7 @@ app.post("/api/auth/login", async (req, res) => {
     const resultado = await pool.query(
       `SELECT id_socio, nombre, apellido, correo, password, rol
       FROM public.socio
-      WHERE LOWER(correo) = $1`
+      WHERE LOWER(correo) = $1`,
       [correo]
     );
 
