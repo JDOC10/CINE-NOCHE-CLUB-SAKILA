@@ -150,6 +150,38 @@ function verificarSesion(req, res, next) {
   }
 }
 
+async function verificarAdmin(req, res, next) {
+  try {
+    const resultado = await pool.query(
+      `SELECT rol
+       FROM public.socio
+       WHERE id_socio = $1`,
+      [req.idSocio]
+    );
+
+    if (resultado.rows.length === 0) {
+      return res.status(401).json({
+        error: "Usuario no encontrado"
+      });
+    }
+
+    if (resultado.rows[0].rol !== "admin") {
+      return res.status(403).json({
+        error: "No tienes permisos de administrador"
+      });
+    }
+
+    next();
+
+  } catch (error) {
+    console.error("Error verificando administrador:", error);
+
+    res.status(500).json({
+      error: "No se pudieron verificar tus permisos"
+    });
+  }
+}
+
 // ESTADO DEL SERVIDOR
 
 app.get("/api/estado", async (req, res) => {
@@ -170,6 +202,20 @@ app.get("/api/estado", async (req, res) => {
     });
   }
 });
+
+// COMPROBAR ACCESO DE ADMINISTRADOR
+
+app.get(
+  "/api/admin/estado",
+  verificarSesion,
+  verificarAdmin,
+  (req, res) => {
+    res.json({
+      ok: true,
+      mensaje: "Acceso administrativo autorizado"
+    });
+  }
+);
 
 // PELÍCULAS
 
