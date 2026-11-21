@@ -703,9 +703,9 @@ app.post("/api/auth/login", async (req, res) => {
     }
 
     const resultado = await pool.query(
-      `SELECT id_socio, nombre, apellido, correo, password
-       FROM public.socio
-       WHERE LOWER(correo) = $1`,
+      `SELECT id_socio, nombre, apellido, correo, password, rol
+      FROM public.socio
+      WHERE LOWER(correo) = $1`
       [correo]
     );
 
@@ -735,7 +735,8 @@ app.post("/api/auth/login", async (req, res) => {
         id_socio: socio.id_socio,
         nombre: socio.nombre,
         apellido: socio.apellido,
-        correo: socio.correo
+        correo: socio.correo,
+        rol: socio.rol
       }
     });
 
@@ -753,7 +754,7 @@ app.post("/api/auth/login", async (req, res) => {
 app.get("/api/auth/yo", verificarSesion, async (req, res) => {
   try {
     const resultado = await pool.query(
-      `SELECT id_socio, nombre, apellido, correo
+      `SELECT id_socio, nombre, apellido, correo, rol
        FROM public.socio
        WHERE id_socio = $1`,
       [req.idSocio]
