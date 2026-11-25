@@ -1,0 +1,533 @@
+
+.admin-layout {
+  min-height: 100vh;
+  display: flex;
+  background: #09090f;
+  color: #f5f3ff;
+  font-family: Arial, sans-serif;
+}
+
+.admin-sidebar {
+  width: 255px;
+  min-width: 255px;
+  min-height: 100vh;
+  padding: 28px 18px;
+  background: #10101a;
+  border-right: 1px solid #252438;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-marca {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px 35px;
+}
+
+.admin-marca-icono {
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #8b5cf6, #5b21b6);
+  border-radius: 13px;
+  font-size: 19px;
+}
+
+.admin-marca strong,
+.admin-marca span {
+  display: block;
+}
+
+.admin-marca strong {
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+
+.admin-marca span {
+  margin-top: 4px;
+  color: #a78bfa;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+.admin-menu-titulo {
+  padding: 15px 12px;
+  color: #77748d;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 1.8px;
+}
+
+.admin-menu {
+  display: grid;
+  gap: 9px;
+}
+
+.admin-menu button {
+  border: 0;
+  border-radius: 10px;
+  padding: 14px;
+  background: transparent;
+  color: #aaa8bd;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.admin-menu button:hover,
+.admin-menu button.activo {
+  background: #28213e;
+  color: #c4a7ff;
+}
+
+.admin-menu button.activo {
+  box-shadow: inset 3px 0 #a78bfa;
+}
+
+.admin-menu button span {
+  width: 20px;
+  text-align: center;
+  font-size: 17px;
+}
+
+.admin-sidebar-inferior {
+  margin-top: auto;
+  display: grid;
+  gap: 18px;
+}
+
+.admin-estado {
+  padding: 13px 10px;
+  border-top: 1px solid #29283a;
+  color: #aaa8bd;
+  font-size: 11px;
+}
+
+.admin-estado span {
+  width: 8px;
+  height: 8px;
+  display: inline-block;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+.admin-volver {
+  padding: 13px;
+  border: 1px solid #39334f;
+  border-radius: 9px;
+  background: transparent;
+  color: #c4b5fd;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.admin-volver:hover {
+  background: #28213e;
+}
+
+.admin-contenido {
+  flex: 1;
+  min-width: 0;
+  padding: 35px;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.admin-header > div > span,
+.admin-bienvenida > div > span,
+.admin-panel-titulo > div > span {
+  color: #a78bfa;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 1.8px;
+}
+
+.admin-header h1 {
+  margin: 9px 0 0;
+  font-size: clamp(22px, 3vw, 30px);
+}
+
+.admin-actualizar {
+  padding: 12px 17px;
+  border: 1px solid #514174;
+  border-radius: 9px;
+  background: #211a35;
+  color: #d8c9ff;
+  cursor: pointer;
+}
+
+.admin-actualizar:hover {
+  background: #342451;
+}
+
+.admin-actualizar:disabled {
+  opacity: .5;
+  cursor: wait;
+}
+
+.admin-bienvenida {
+  min-height: 205px;
+  padding: 32px;
+  border: 1px solid #453269;
+  border-radius: 17px;
+  background:
+    radial-gradient(circle at 85% 20%, #493078 0, transparent 32%),
+    linear-gradient(120deg, #211832, #151321);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.admin-bienvenida h2 {
+  max-width: 560px;
+  margin: 13px 0;
+  font-size: clamp(23px, 3vw, 34px);
+  line-height: 1.2;
+}
+
+.admin-bienvenida p {
+  max-width: 520px;
+  color: #aaa5bd;
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+.admin-bienvenida-icono {
+  width: 100px;
+  height: 100px;
+  min-width: 100px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #8b5cf6;
+  border-radius: 25px;
+  background: #35244f;
+  color: #d8c9ff;
+  font-size: 40px;
+}
+
+.admin-estadisticas {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.admin-stat {
+  padding: 22px;
+  border: 1px solid #29283b;
+  border-radius: 14px;
+  background: #14141f;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin-stat-icono {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  font-size: 21px;
+}
+
+.admin-stat-icono.violeta {
+  background: #32234e;
+}
+
+.admin-stat-icono.azul {
+  background: #1d304d;
+}
+
+.admin-stat-icono.verde {
+  background: #1d3b32;
+}
+
+.admin-stat span,
+.admin-stat strong,
+.admin-stat small {
+  display: block;
+}
+
+.admin-stat span {
+  color: #aaa8bd;
+  font-size: 12px;
+}
+
+.admin-stat strong {
+  margin: 7px 0;
+  font-size: 27px;
+}
+
+.admin-stat small {
+  color: #77748d;
+  font-size: 11px;
+}
+
+.admin-panel-inferior {
+  margin-top: 32px;
+}
+
+.admin-panel-titulo {
+  margin-bottom: 18px;
+}
+
+.admin-panel-titulo h2 {
+  margin: 8px 0;
+  font-size: 21px;
+}
+
+.admin-panel-titulo p {
+  color: #9290a5;
+  font-size: 13px;
+}
+
+.admin-accesos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 17px;
+}
+
+.admin-accesos button {
+  position: relative;
+  padding: 23px;
+  border: 1px solid #302d44;
+  border-radius: 13px;
+  background: #14141f;
+  color: #f5f3ff;
+  text-align: left;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.admin-accesos button:hover {
+  border-color: #8b5cf6;
+  transform: translateY(-2px);
+}
+
+.admin-accesos button > span,
+.admin-accesos strong,
+.admin-accesos small {
+  display: block;
+}
+
+.admin-accesos button > span {
+  margin-bottom: 14px;
+  font-size: 24px;
+}
+
+.admin-accesos strong {
+  font-size: 15px;
+}
+
+.admin-accesos small {
+  margin-top: 7px;
+  color: #9692aa;
+  font-size: 12px;
+}
+
+.admin-accesos b {
+  position: absolute;
+  top: 24px;
+  right: 23px;
+  color: #a78bfa;
+  font-size: 20px;
+}
+
+.admin-tabla-contenedor {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #302d44;
+  border-radius: 13px;
+  background: #14141f;
+}
+
+.admin-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.admin-tabla th {
+  padding: 17px;
+  background: #1d1a2b;
+  color: #b9a3ed;
+  font-size: 11px;
+  letter-spacing: .7px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.admin-tabla td {
+  padding: 17px;
+  border-top: 1px solid #29283a;
+  color: #c9c6d6;
+  font-size: 13px;
+}
+
+.admin-tabla tbody tr:hover {
+  background: #1c1a29;
+}
+
+.admin-nombre-tabla {
+  color: #fff !important;
+  font-weight: bold;
+}
+
+.admin-rol {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+}
+
+.admin-rol.administrador {
+  background: #382650;
+  color: #d8b4fe;
+}
+
+.admin-rol.cliente {
+  background: #1d3440;
+  color: #9bd8ed;
+}
+
+.admin-error {
+  margin-bottom: 22px;
+  padding: 17px;
+  border: 1px solid #7f343e;
+  border-radius: 10px;
+  background: #321a20;
+  color: #fecaca;
+}
+
+.admin-error p {
+  font-size: 13px;
+}
+
+.admin-error button {
+  padding: 9px 13px;
+  border: 1px solid #a44b57;
+  border-radius: 7px;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+}
+
+.admin-cargando {
+  min-height: 300px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  color: #aaa8bd;
+}
+
+.admin-spinner {
+  width: 35px;
+  height: 35px;
+  border: 3px solid #39334f;
+  border-top-color: #a78bfa;
+  border-radius: 50%;
+  animation: admin-girar .8s linear infinite;
+}
+
+@keyframes admin-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.admin-footer {
+  margin-top: 50px;
+  padding: 20px 0;
+  border-top: 1px solid #29283a;
+  color: #77748d;
+  font-size: 11px;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .admin-sidebar {
+    width: 210px;
+    min-width: 210px;
+  }
+
+  .admin-contenido {
+    padding: 24px;
+  }
+
+  .admin-estadisticas {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .admin-layout {
+    display: block;
+  }
+
+  .admin-sidebar {
+    width: 100%;
+    min-width: 0;
+    min-height: auto;
+    padding: 15px;
+  }
+
+  .admin-marca {
+    padding-bottom: 15px;
+  }
+
+  .admin-menu-titulo {
+    padding: 8px 10px;
+  }
+
+  .admin-menu {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .admin-menu button {
+    justify-content: center;
+    padding: 12px 5px;
+    gap: 5px;
+    font-size: 11px;
+  }
+
+  .admin-sidebar-inferior {
+    margin-top: 15px;
+  }
+
+  .admin-contenido {
+    padding: 20px 14px;
+  }
+
+  .admin-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-bienvenida {
+    padding: 23px;
+  }
+
+  .admin-bienvenida-icono {
+    display: none;
+  }
+
+  .admin-accesos {
+    grid-template-columns: 1fr;
+  }
+}

@@ -9,6 +9,7 @@ import {
 import "./App.css";
 import "./Auth.css";
 import "./CineAvanzado.css";
+import Admin from "./Admin";
 
 // CONEXIÓN CON EL BACKEND DE RENDER
 const API_URL = (
@@ -98,6 +99,7 @@ function App() {
   const [mostrarAuth, setMostrarAuth] = useState(false);
   const [modoAuth, setModoAuth] = useState("login");
   const [mostrarCuenta, setMostrarCuenta] = useState(false);
+  const [mostrarAdmin, setMostrarAdmin] = useState(false);
   const [misAlquileres, setMisAlquileres] = useState([]);
   const [cargandoMisAlquileres, setCargandoMisAlquileres] = useState(false);
   const [errorMisAlquileres, setErrorMisAlquileres] = useState("");
@@ -167,6 +169,7 @@ function App() {
       .then((datos) => {
         if (activo) {
           setUsuario(datos.usuario || datos);
+          console.log("USUARIO EN REACT:", datos.usuario || datos);
         }
       })
       .catch((error) => {
@@ -796,9 +799,26 @@ function App() {
             </span>
           ) : usuario ? (
             <>
+              {usuario.rol === "admin" && (
+                <button
+                  className="auth-nav-boton"
+                  onClick={() => {
+                    setMostrarCuenta(false);
+                    setPeliculaSeleccionada(null);
+                    setMostrarAdmin(true);
+                    window.scrollTo(0, 0);
+                  }}
+                >
+                  Administración
+                </button>
+              )}
+
               <button
                 className="auth-nav-boton"
-                onClick={abrirCuenta}
+                onClick={() => {
+                  setMostrarAdmin(false);
+                  abrirCuenta();
+                }}
               >
                 Mi cuenta
               </button>
@@ -948,6 +968,13 @@ function App() {
             </button>
           </section>
         </main>
+
+      ) : mostrarAdmin && usuario?.rol === "admin" ? (
+
+        <Admin
+          token={token}
+          onVolver={() => setMostrarAdmin(false)}
+        />
 
       ) : peliculaSeleccionada ? (
 
@@ -1831,20 +1858,22 @@ function App() {
 
       {/* FOOTER */}
 
-      <footer className="cine-footer">
-        <div className="cine-footer-marca">
-          ▶ CINE NOCHE - CLUB SAKILA
-        </div>
+      {!mostrarAdmin && (
+        <footer className="cine-footer">
+          <div className="cine-footer-marca">
+            ▶ CINE NOCHE - CLUB SAKILA
+          </div>
 
-        <p>
-          Tu cine en casa. Historias para cada noche.
-        </p>
+          <p>
+            Tu cine en casa. Historias para cada noche.
+          </p>
 
-        <span>
-          © {new Date().getFullYear()} CINE NOCHE - CLUB SAKILA.
-          Todos los derechos reservados.
-        </span>
-      </footer>
+          <span>
+            © {new Date().getFullYear()} CINE NOCHE - CLUB SAKILA.
+            Todos los derechos reservados.
+          </span>
+        </footer>
+      )}
 
     </div>
   );
