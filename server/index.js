@@ -557,6 +557,75 @@ app.delete(
 );
 
 
+// ESTADISTICAS DE LA TIENDA
+
+app.get(
+  "/api/admin/estadisticas",
+  verificarSesion,
+  verificarAdmin,
+  async (req, res) => {
+    try {
+      const resultadoGeneral = await pool.query(
+        `SELECT
+          (SELECT COUNT(*) FROM public.pelicula) AS total_peliculas,
+          (SELECT COUNT(*) FROM public.socio) AS total_usuarios,
+          (SELECT COUNT(*) FROM public.alquiler) AS total_alquileres,
+          (SELECT COALESCE(SUM(subtotal), 0)
+           FROM public.detalle_alquiler) AS ingresos_totales`
+      );
+
+      const resultadoRanking = await pool.query(
+        `SELECT
+          p.id_pelicula,
+          p.titulo,
+          p.poster_url,
+          COUNT(d.id_detalle) AS total_alquileres,
+          COALESCE(SUM(d.subtotal), 0) AS ingresos
+         FROM public.pelicula p
+         LEFT JOIN public.detalle_alquiler d
+           ON p.id_pelicula = d.id_pelicula
+         GROUP BY
+          p.id_pelicula,
+          p.titulo,
+          p.poster_url
+         ORDER BY
+          COUNT(d.id_detalle) DESC,
+          p.titulo ASC`
+      );
+
+      const ranking = resultadoRanking.rows;
+
+      const masAlquilada = ranking.length > 0
+        ? ranking[0]
+        : null;
+
+      const menosAlquilada = ranking.length > 0
+        ? ranking.reduce((menor, actual) =>
+            Number(actual.total_alquileres) <
+            Number(menor.total_alquileres)
+              ? actual
+              : menor
+          )
+        : null;
+
+      res.json({
+        general: resultadoGeneral.rows[0],
+        mas_alquilada: masAlquilada,
+        menos_alquilada: menosAlquilada,
+        ranking
+      });
+
+    } catch (error) {
+      console.error("Error consultando estadísticas:", error);
+
+      res.status(500).json({
+        error: "No se pudieron consultar las estadísticas"
+      });
+    }
+  }
+);
+
+
  // ADMINISTRAR USUARIOS
 
 app.get(
